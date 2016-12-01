@@ -10,7 +10,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-
 public class KMeansMapper extends Mapper<LongWritable, Text, PixelWritableComparable, PixIndexTuple> {
     double[][] mCenters;
     private PixelWritableComparable outKey = new PixelWritableComparable();

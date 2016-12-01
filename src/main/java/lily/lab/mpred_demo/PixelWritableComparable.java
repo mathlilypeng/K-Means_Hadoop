@@ -7,20 +7,34 @@ import java.util.Arrays;
 
 import org.apache.hadoop.io.WritableComparable;
 
+import javax.annotation.Nonnull;
+
 public class PixelWritableComparable implements WritableComparable<PixelWritableComparable> {
+    /** id of pixel */
+    private long id = -1;
+    /** rgba value of pixel */
     private double[] rgba = new double[4];
-    public void setPixel(double[] pix) {
-        if (pix.length != 4) {
-            System.err.println("Error arises in calling setPixel function!");
+
+    public void setPixel(double[] pixel) {
+        if (pixel.length != 4) {
+            System.err.println("Invalid pixel value!");
             System.exit(2);
         }
-        System.arraycopy(pix, 0, rgba, 0, pix.length);
+        System.arraycopy(pixel, 0, rgba, 0, pixel.length);
     }
     
     public double[] getPixel() {
         return rgba;
     }
-    
+
+    public void setID(int id) {
+        this.id = id;
+    }
+
+    public long getID() {
+        return id;
+    }
+
     public void readFields(DataInput in) throws IOException {
         // Read the data out in the order it is written
         for (int i=0; i<rgba.length; i++) {
@@ -30,13 +44,15 @@ public class PixelWritableComparable implements WritableComparable<PixelWritable
     
     public void write(DataOutput out) throws IOException {
         // Write the data out in the order it is read
-        for(int i=0; i<rgba.length; i++) {
-            out.writeDouble(rgba[i]);
+        for (double aRgba : rgba) {
+            out.writeDouble(aRgba);
         }
     }
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append(id);
+        sb.append(',');
         for (int i=0; i<rgba.length-1; i++) {
             sb.append(String.valueOf(rgba[i]));
             sb.append(',');
@@ -45,7 +61,7 @@ public class PixelWritableComparable implements WritableComparable<PixelWritable
         return sb.toString();
     }
     
-    public int compareTo(PixelWritableComparable o) {
+    public int compareTo(@Nonnull PixelWritableComparable o) {
         double[] thisValue = this.rgba;
         double[] thatValue = o.rgba;
         for(int i=0; i<thisValue.length; i++) {

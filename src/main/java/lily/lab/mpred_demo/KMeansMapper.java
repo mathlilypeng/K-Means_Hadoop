@@ -10,14 +10,15 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-public class KMeansMapper extends Mapper<LongWritable, Text, PixelWritableComparable, PixIndexTuple> {
-    double[][] mCenters;
+public class KMeansMapper extends Mapper<LongWritable, Text, PixelWritableComparable, PixelWritableComparable> {
+    private double[][] centers;
     private PixelWritableComparable outKey = new PixelWritableComparable();
-    private PixIndexTuple outValue = new PixIndexTuple();
+    private PixelWritableComparable outValue = new PixelWritableComparable();
 		
     public void setup(Context context) throws IOException, InterruptedException {
 	    int k = Integer.parseInt(context.getConfiguration().get("numClusters"));
-	    mCenters = new double[k][4];		
+        // initialize centers for each mapper
+	    this.centers = new double[k][4];
         try {
             Path[] files = DistributedCache.getLocalCacheFiles(context.getConfiguration());
             int cnt = 0;
@@ -26,16 +27,16 @@ public class KMeansMapper extends Mapper<LongWritable, Text, PixelWritableCompar
                 BufferedReader rdr = new BufferedReader(new FileReader(p.toString()));
                 try {
                     while ((line = rdr.readLine()) != null) {
-                        String[] center_rgba_str = line.split("\t")[0].split(",");
-                        if (center_rgba_str.length != 4) {
-                            System.err.println("The rgba value of centroids is not valid!");
+                        String[] pixelStr = line.split("\t")[0].split(",");
+                        if (pixelStr.length != 5) {
+                            System.err.println("Invalid pixel string!");
                             System.exit(2);
                         }					    
-                        double[] center_rgba = new double[center_rgba_str.length];
-                        for (int i=0; i<center_rgba_str.length; i++) {
-		                    center_rgba[i] = Double.parseDouble(center_rgba_str[i]);
+                        double[] centerRGBA = new double[4];
+                        for (int i=1; i<5; i++) {
+		                    centerRGBA[i] = Double.parseDouble(pixelStr[i]);
 	                    }
-                        mCenters[cnt] = center_rgba;
+                        this.centers[cnt] = centerRGBA;
                         cnt++;
                     }
                 } finally {
@@ -43,7 +44,7 @@ public class KMeansMapper extends Mapper<LongWritable, Text, PixelWritableCompar
 			    }
 		    }
 		} catch (IOException e) {
-			System.err.println("Exception Reading DistributedCache: " + e);
+			System.err.println("Exception reading distributedCache: " + e);
 		}
 	}
 	
@@ -59,19 +60,22 @@ public class KMeansMapper extends Mapper<LongWritable, Text, PixelWritableCompar
         for(int i=0; i<line.length-1; i++) {
             rgba[i] = Double.parseDouble(line[i+1]);
         }
-        outValue.setPixel(rgba);
-        outValue.setID(id);
+        this.outValue.setPixel(rgba);
+        this.outValue.setID(id);
+
+        // compare distances of the pixel to all centers and find its closest center pixel
         int centerIndex = 0;
         double dist = Double.POSITIVE_INFINITY;
-        for (int i=0; i<mCenters.length; i++) {
-            double tmp = computeDist(rgba, mCenters[i]);
+        for (int i=0; i<this.centers.length; i++) {
+            double tmp = computeDist(rgba, this.centers[i]);
             if (tmp < dist) {
                 dist = tmp;
                 centerIndex = i;
             }
         }
-        outKey.setPixel(mCenters[centerIndex]);
-        context.write(outKey, outValue);
+        // assign the pixel to cluster of its closest center
+        this.outKey.setPixel(this.centers[centerIndex]);
+        context.write(this.outKey, this.outValue);
     }
     
     private double computeDist(double[] point, double[] center) {

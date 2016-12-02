@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -533,7 +532,9 @@ public class PixelClusteringProgram {
      * @param outputDirStr The directory for the results to be output to
      * @param centersDirStr The path for to the centers of kmeans clustering
      * @param numClusters The number of clusters set for kmeans clustering
-     * @throws IOException
+     * @throws IOException,
+     * @throws InterruptedException
+     * @throws ClassNotFoundException
      */
     public boolean start(String inputDirStr, String outputDirStr, String centersDirStr, int numClusters)
             throws IOException, InterruptedException, ClassNotFoundException {

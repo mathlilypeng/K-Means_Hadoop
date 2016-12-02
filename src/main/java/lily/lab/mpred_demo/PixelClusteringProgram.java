@@ -355,9 +355,8 @@ public class PixelClusteringProgram {
         private Text outValue = new Text();
 
         /**
-         * This function aggregates pixel points collected for each center. It will comput sum of RGB values
-         * and count of pixel points in this cluster. If no pixel points
-         * in that cluster then it will randomly generate one center.
+         * This function aggregates pixel points collected for each center. It will compute sum of RGB values
+         * and count of pixel points in this cluster.
          *
          * @param key center pixel instance
          * @param values aggregation of pixel points
@@ -382,8 +381,9 @@ public class PixelClusteringProgram {
         }
 
         /***
-         * This function will compute average RGB values in a cluster as the new center for this cluster and
-         * output result to HDFS
+         * This function will compute average RGB values in a cluster as the new center for this cluster,
+         * If no pixel points in that cluster then it will randomly generate one center.
+         * In the end it will output the new center and pixel points beloning to it to HDFS
          *
          * @param context context of job
          * @throws IOException

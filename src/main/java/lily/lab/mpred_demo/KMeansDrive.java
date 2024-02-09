@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class KMeansDrive {
-    // set root directory on HDFS
+    // set root directory on HDFS test test test
     private final static String ROOT = "/user/myproject/";
 
     public static void main( String[] args ) throws Exception {
